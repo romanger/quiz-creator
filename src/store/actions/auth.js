@@ -14,6 +14,7 @@ export function auth(email, password, isLogin) {
         if (isLogin) {
             url = 'https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key=AIzaSyAbvi4VGUOYRTpxl-NcgX_l0Bs9PQM5hCs';
         }
+        console.log(url);
 
         const response = await axios.post(url, authData);
         const data = response.data;
@@ -53,3 +54,20 @@ export function authSuccess(token) {
     }
 }
 
+export function autoLogin() {
+    return dispatch => {
+        const token = localStorage.getItem('token');
+
+        if (!token) {
+            dispatch(logout())
+        } else {
+            const expirationDate = new Date(localStorage.getItem('expirationDate'));
+            if (expirationDate <= new Date()) {
+                dispatch(logout())
+            } else {
+                dispatch(authSuccess(token));
+                dispatch(autoLogout((expirationDate.getTime() - new Date().getTime()) / 1000));
+            }
+        }
+    }
+}
